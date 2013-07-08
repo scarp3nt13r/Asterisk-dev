@@ -8,8 +8,20 @@ same => n,Answer()
 same => n,Set(Chann=${CHANNEL})
 same => n,Set(ChannelIsUp=1)
 
+
+
 same => n,While($[${ChannelIsUp} > 0])
-same => n,Set(DTMF=${RAND(2,8)})
+
+#Creation de la longueur de la DTMF
+same => n,Set(DTMF_REPEAT=${RAND(1,9)})
+same => n,Set(i=1)
+same => n,While($[${i} <= ${DTMF_REPEAT}])
+same => n,Set(DTMF_ADD=${RAND(0,9)})
+same => n,Set(DTMF=${DTMF}${DTMF_ADD})
+same => n,Set(i=$[${i} + 1])
+same => n,EndWhile()
+
+#Envoi de la DTMF
 same => n,SendDTMF(${DTMF},0.50,)
 same => n,Wait(2)
 same => n,EndWhile()
