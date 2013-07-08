@@ -1,6 +1,7 @@
 [CSS_XXXX]
 exten => _X.,1,NoOp(<!------- INFORMATION --------->)
 ;#### Variable du Script ########
+same => n,Set(DataBaseRecordLog=/tmp/DB-224.log)
 same => n,Set(CALL_RECORD=Y)
 same => n,Set(RECORD_FILE_PATH=/tmp/
 
@@ -45,6 +46,8 @@ same => n,Macro(Call.Duration,${StartTime},${EndTime})
 
 
 same => n,NoOp(<!------- ${Day} ${DayDate} ${Month} ${Year}.${StartTime}.${EndTime}.${Elapsed.Time}.XXXXXX.${RECORD_FILE} --------->)
+same => n,Set(Reporting=${Day} ${DayDate} ${Month} ${Year}.${StartTime}.${EndTime}.${Elapsed.Time}.${DTMF_SEQ}.${RECORD_FILE})
+same => n,Set(INSERT=${SHELL(echo -n ${Reporting} >> ${DataBaseRecordLog} )})
 same => n,HangUp()
 
 
