@@ -1,0 +1,74 @@
+[CSS_XXXX]
+exten => _X.,1,NoOp(<!-------  --------->)
+same => n,Macro(Date)
+same => n,Macro(Time)
+same => n,Set(StartTime=${Time})
+same => n,Set(SPYGROUP=AUDIT)
+same => n,Answer()
+same => n,Set(Chann=${CHANNEL})
+same => n,Set(ChannelIsUp=1)
+
+same => n,While($[${ChannelIsUp} > 0])
+same => n,Set(DTMF=${RAND(2,8)})
+same => n,SendDTMF(${DTMF},0.50,)
+same => n,Wait(2)
+same => n,EndWhile()
+
+
+
+same => n,Macro(Time)
+same => n,Set(EndTime=${Time})
+same => n,Macro(Call.Duration,${StartTime},${EndTime})
+same => n,NoOp(<!------- ${Day} ${DayDate} ${Month} ${Year}.${StartTime}.${EndTime}.${Elapsed.Time} --------->)
+same => n,HangUp()
+
+
+
+[macro-Date]
+exten => s,1,Set(Day=${SHELL(date | awk -F " " '{ print $1 }')})
+same => n,Set(Day=${CUT(Day,\\n,1)})
+same => n,Set(DayDate=${SHELL(date | awk -F " " '{ print $3 }')})
+same => n,Set(DayDate=${CUT(DayDate,\\n,1)})
+same => n,Set(Month=${SHELL(date | awk -F " " '{ print $2 }')})
+same => n,Set(Month=${CUT(Month,\\n,1)})
+same => n,Set(Year=${SHELL(date | awk -F " " '{ print $6 }')})
+same => n,Set(Year=${CUT(Year,\\n,1)})
+
+[macro-Time]
+exten => s,1,Set(Time=${SHELL(date | awk -F " " '{ print $4 }')})
+same => n,Set(Time=${CUT(Time,\\n,1)})
+
+[macro-Call.Duration]
+exten => s,1,Set(SHour=${CUT(ARG1,:,1)})
+same => n,Set(SMin=${CUT(ARG1,:,2)})
+same => n,Set(SSec=${CUT(ARG1,:,3)})
+same => n,Set(SHourSec=$[${SHour} * 3600])
+same => n,Set(SMinSec=$[${SMin} * 60])
+same => n,Set(SSTotal=$[${SHourSec} + ${SMinSec} + ${SSec}])
+
+same => n,Set(EHour=${CUT(ARG2,:,1)})
+same => n,Set(EMin=${CUT(ARG2,:,2)})
+same => n,Set(ESec=${CUT(ARG2,:,3)})
+same => n,Set(EHourSec=$[${EHour} * 3600])
+same => n,Set(EMinSec=$[${EMin} * 60])
+same => n,Set(ESTotal=$[${EHourSec} + ${EMinSec}])
+
+same => n,Set(TTimeInSec=$[${ESTotal} - ${SSTotal}])
+same => n,Set(THours=$[${TTimeInSec} / 60])
+same => n,Set(THours=$[${THours} * 0.0166666667])
+same => n,Set(FHours=${CUT(THours,.,1)})
+same => n,GotoIf($[${Fhours} > 10]?MINUTES:ADD_H0)
+same => n(ADD_H0),Set(FHours=0${FHours})
+same => n(MINUTES),Set(FMins=${CUT(THours,.,2)})
+same => n,GotoIf($["${FMins}"  = "" ]?FIX_Str)
+
+
+same => n,GotoIf($[${FMins:0:2} < 10]?FIX_Mins)
+same => n,Set(FMins=$[${FMins} * 60])
+same => n,NoOp(<!------- FMins = ${FMins} ------->)
+same => n(FIX_Mins),Set(FMins=${FMins:0:2})
+same => n,Goto(FINAL_SET)
+same => n(FIX_Str),Set(FMins=00)
+
+
+same => n(FINAL_SET),Set(Elapsed.Time=${FHours}:${FMins}:${ESec})
