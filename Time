@@ -2,6 +2,7 @@
 exten => _X.,1,NoOp(<!------- INFORMATION --------->)
 ;#### Variable du Script ########
 same => n,Set(DataBaseRecordLog=/tmp/DB-224.log)
+same => n,Set(DTMF_RANGE=*#abcd0-9)
 same => n,Set(CALL_RECORD=Y)
 same => n,Set(RECORD_FILE_PATH=/tmp/
 
@@ -29,7 +30,8 @@ same => n,While($[${ChannelIsUp} > 0])
 same => n,Set(DTMF_REPEAT=${RAND(1,9)})
 same => n,Set(i=1)
 same => n,While($[${i} <= ${DTMF_REPEAT}])
-same => n,Set(DTMF_ADD=${RAND(0,9)})
+same => n,Set(DTMF_ADD=${SHELL(tr -dc ${DTMF_RANGE} < /dev/urandom | head -c 1 | xargs)})
+same => n,Set(DTMF_ADD=${CUT(DTMF_ADD,\\n,1)})
 same => n,Set(DTMF=${DTMF}${DTMF_ADD})
 same => n,Set(i=$[${i} + 1])
 same => n,EndWhile()
